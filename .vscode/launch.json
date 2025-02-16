@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/frost/web/42-Titles/app/nostalgia-section",
-      "program": "/home/frost/web/42-Titles/app/nostalgia-section/build/Debug/outDebug",
+      "cwd": "/home/frost/web/42-Titles/app/animatedlist-demo",
+      "program": "/home/frost/web/42-Titles/app/animatedlist-demo/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
