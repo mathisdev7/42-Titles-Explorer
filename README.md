@@ -25,7 +25,7 @@
 
 ## 🚀 Getting Started
 
-[**Visit the live site**](https://your-domain-here.com) ← Start exploring titles now!
+[**Visit the live site**](https://42-titles.help) ← Start exploring titles now!
 
 1. **Browse Titles** → Explore the complete list of achievements
 2. **Click Any Title** → See detailed requirements and campuses
