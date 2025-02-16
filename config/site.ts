@@ -11,6 +11,6 @@ export const siteConfig = {
     },
   ],
   links: {
-    github: "https://github.com/mathisdev7",
+    github: "https://github.com/mathisdev7/42-titles-explorer",
   },
 }
