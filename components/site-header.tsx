@@ -20,7 +20,7 @@ export function SiteHeader() {
               rel="noreferrer"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "icon" }),
-                "hover:drop-shadow-glow transition-all hover:scale-110 hover:text-primary"
+                "transition-all hover:scale-110 hover:text-primary hover:drop-shadow-glow"
               )}
             >
               <Icons.gitHub className="size-5" />
