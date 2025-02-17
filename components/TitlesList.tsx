@@ -225,7 +225,11 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
                       toast({
                         title: `Redirected to ${res.split("/").pop()}`,
                       })
-                      window.open(res, "_blank")
+                      const a = document.createElement("a")
+                      a.href = res
+                      a.target = "_blank"
+                      a.rel = "noopener noreferrer"
+                      a.click()
                     }
                   }}
                 >
