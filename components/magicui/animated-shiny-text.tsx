@@ -1,15 +1,18 @@
-import { cn } from "@/lib/utils";
-import { CSSProperties, FC, ReactNode } from "react";
+import { CSSProperties, FC, ReactNode } from "react"
+
+import { cn } from "@/lib/utils"
 
 interface AnimatedShinyTextProps {
-  children: ReactNode;
-  className?: string;
-  shimmerWidth?: number;
+  children: ReactNode
+  className?: string
+  shimmerWidth?: number
+  onClick?: () => void
 }
 
 const AnimatedShinyText: FC<AnimatedShinyTextProps> = ({
   children,
   className,
+  onClick,
   shimmerWidth = 100,
 }) => {
   return (
@@ -19,6 +22,7 @@ const AnimatedShinyText: FC<AnimatedShinyTextProps> = ({
           "--shimmer-width": `${shimmerWidth}px`,
         } as CSSProperties
       }
+      onClick={onClick}
       className={cn(
         "mx-auto max-w-md text-neutral-600/50 dark:text-neutral-400/50 ",
 
@@ -28,12 +32,12 @@ const AnimatedShinyText: FC<AnimatedShinyTextProps> = ({
         // Shimmer gradient
         "bg-gradient-to-r from-transparent via-black/80 via-50% to-transparent  dark:via-white/80",
 
-        className,
+        className
       )}
     >
       {children}
     </p>
-  );
-};
+  )
+}
 
-export default AnimatedShinyText;
+export default AnimatedShinyText
