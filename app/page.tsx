@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowRightIcon } from "lucide-react"
 
 import { siteConfig } from "@/config/site"
@@ -10,10 +11,14 @@ import AnimatedShinyText from "@/components/magicui/animated-shiny-text"
 import RetroGrid from "@/components/magicui/retro-grid"
 
 export default function IndexPage() {
+  const router = useRouter()
   return (
     <section className="container mx-auto mt-20 grid items-center justify-center gap-6 pb-8 pt-6 md:py-10">
       <div className="retro-theme relative flex max-w-[980px] flex-col items-center gap-6">
         <div
+          onClick={() => {
+            router.push("/titles")
+          }}
           className={cn(
             "group z-10 rounded-full border border-gray-200 bg-gray-200 text-sm transition-all ease-in hover:cursor-pointer hover:bg-neutral-200 dark:border-white/5 dark:bg-neutral-900 dark:hover:bg-neutral-800"
           )}

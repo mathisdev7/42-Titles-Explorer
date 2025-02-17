@@ -2,7 +2,10 @@ import { prisma } from "@/lib/prisma"
 import TitlesList from "@/components/TitlesList"
 
 export default async function TitlesPage() {
-  const titles = await prisma.title.findMany()
+  const initialTitles = await prisma.title.findMany({
+    take: 20,
+    orderBy: { id: "asc" },
+  })
 
-  return <TitlesList initialTitles={titles} />
+  return <TitlesList initialTitles={initialTitles} />
 }

@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useTitleStore } from "@/store/title-store"
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card"
 import { Title } from "@prisma/client"
 import { ExternalLink, Search } from "lucide-react"
 
 import { toast } from "@/hooks/use-toast"
-import { redirectToRandomUser } from "@/app/actions"
+import { redirectToRandomUser } from "@/components/actions/redirectToRandomUser"
 
 import { Icons } from "./icons"
 import { Button } from "./ui/button"
@@ -17,18 +18,41 @@ interface TitlesListProps {
 }
 
 export default function TitlesList({ initialTitles }: TitlesListProps) {
+  const { page, incrementPage } = useTitleStore()
   const [searchQuery, setSearchQuery] = useState("")
-  const [titles] = useState(initialTitles)
+  const [hasMore, setHasMore] = useState(true)
+  const [titles, setTitles] = useState(initialTitles)
   const [expandedTitles, setExpandedTitles] = useState<Record<string, boolean>>(
     {}
   )
   const [hasDescription, setHasDescription] = useState(false)
   const [selectedCampuses, setSelectedCampuses] = useState<string[]>([])
   const [hasLogin, setHasLogin] = useState(false)
+  const loaderRef = useRef<HTMLDivElement | null>(null)
 
   const allCampuses = Array.from(
     new Set(titles.flatMap((title) => title.campuses))
   ).sort()
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          const newTitles = await loadMoreTitles(page + 1)
+          if (newTitles.length === 0) {
+            setHasMore(false)
+          } else {
+            setTitles((prev) => [...prev, ...newTitles])
+            incrementPage()
+          }
+        }
+      },
+      { threshold: 1.0 }
+    )
+
+    if (loaderRef.current) observer.observe(loaderRef.current)
+    return () => observer.disconnect()
+  }, [page, hasMore])
 
   const filteredTitles = titles.filter((title) => {
     const matchesSearch = title.name
@@ -59,6 +83,16 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
         ? prev.filter((c) => c !== campus)
         : [...prev, campus]
     )
+  }
+
+  const loadMoreTitles = async (page: number) => {
+    try {
+      const response = await fetch(`/api/titles?page=${page}`)
+      return await response.json()
+    } catch (error) {
+      console.error("Error loading more titles:", error)
+      return []
+    }
   }
 
   return (
@@ -203,6 +237,11 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
           )
         })}
       </div>
+      {hasMore && (
+        <div ref={loaderRef} className="col-span-full flex justify-center py-4">
+          <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      )}
     </div>
   )
 }
