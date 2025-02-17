@@ -225,13 +225,20 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
                       toast({
                         title: `Redirected to ${res.split("/").pop()}`,
                       })
-                      const a = document.createElement("a")
-                      a.href = res
-                      a.target = "_blank"
-                      a.rel = "noopener noreferrer"
-                      document.body.appendChild(a)
-                      a.click()
-                      document.body.removeChild(a)
+                      const isMobile = /Mobi|Android|iPhone/i.test(
+                        navigator.userAgent
+                      )
+                      if (isMobile) {
+                        window.location.href = res
+                      } else {
+                        const a = document.createElement("a")
+                        a.href = res
+                        a.target = "_blank"
+                        a.rel = "noopener noreferrer"
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                      }
                     }
                   }}
                 >
