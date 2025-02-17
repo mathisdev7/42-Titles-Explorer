@@ -229,7 +229,9 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
                       a.href = res
                       a.target = "_blank"
                       a.rel = "noopener noreferrer"
+                      document.body.appendChild(a)
                       a.click()
+                      document.body.removeChild(a)
                     }
                   }}
                 >
