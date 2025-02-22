@@ -1,13 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
 import { useTitleStore } from "@/store/title-store"
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card"
 import { Title } from "@prisma/client"
 import { ExternalLink, Search } from "lucide-react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
 
-import { toast } from "@/hooks/use-toast"
 import { redirectToRandomUser } from "@/components/actions/redirectToRandomUser"
+import { toast } from "@/hooks/use-toast"
 
 import { Icons } from "./icons"
 import { Button } from "./ui/button"
@@ -18,21 +19,61 @@ interface TitlesListProps {
 }
 
 export default function TitlesList({ initialTitles }: TitlesListProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const params = useSearchParams()
   const { page, incrementPage } = useTitleStore()
-  const [searchQuery, setSearchQuery] = useState("")
   const [hasMore, setHasMore] = useState(true)
   const [titles, setTitles] = useState(initialTitles)
-  const [expandedTitles, setExpandedTitles] = useState<Record<string, boolean>>(
-    {}
-  )
-  const [hasDescription, setHasDescription] = useState(false)
-  const [selectedCampuses, setSelectedCampuses] = useState<string[]>([])
-  const [hasLogin, setHasLogin] = useState(false)
+  const [expandedTitles, setExpandedTitles] = useState<Record<string, boolean>>({})
+  const [localSearch, setLocalSearch] = useState(params.get("search") || "")
+  const searchDebounceRef = useRef<NodeJS.Timeout>()
   const loaderRef = useRef<HTMLDivElement | null>(null)
+
+  const hasDescription = params.get("description") === "true"
+  const hasLogin = params.get("login") === "true"
+  const selectedCampuses = params.get("campuses")?.split(",").filter(Boolean) || []
 
   const allCampuses = Array.from(
     new Set(titles.flatMap((title) => title.campuses))
   ).sort()
+
+  const createQueryString = useCallback(
+    (updates: Record<string, string | null>) => {
+      const newParams = new URLSearchParams(params.toString())
+
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null) {
+          newParams.delete(key)
+        } else {
+          newParams.set(key, value)
+        }
+      })
+
+      return newParams.toString()
+    },
+    [params]
+  )
+
+  const updateSearchParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const queryString = createQueryString(updates)
+      router.push(`${pathname}${queryString ? `?${queryString}` : ""}`)
+    },
+    [router, pathname, createQueryString]
+  )
+
+  const handleSearchChange = (value: string) => {
+    setLocalSearch(value)
+
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current)
+    }
+
+    searchDebounceRef.current = setTimeout(() => {
+      updateSearchParams({ search: value || null })
+    }, 300)
+  }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -52,18 +93,18 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
 
     if (loaderRef.current) observer.observe(loaderRef.current)
     return () => observer.disconnect()
-  }, [page, hasMore])
+  }, [page, hasMore, incrementPage])
 
   const filteredTitles = titles.filter((title) => {
     const matchesSearch = title.name
       .toLowerCase()
-      .includes(searchQuery.toLowerCase())
+      .includes(localSearch.toLowerCase())
     const matchesDescription =
       !hasDescription || (title.description && title.description.length > 0)
     const matchesCampuses =
       selectedCampuses.length === 0 ||
       title.campuses.some((campus) => selectedCampuses.includes(campus))
-    const matchesLogin = title.name.includes("%login")
+    const matchesLogin = !hasLogin || title.name.includes("%login")
 
     return (
       matchesSearch && matchesDescription && matchesCampuses && matchesLogin
@@ -78,11 +119,13 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
   }
 
   const toggleCampus = (campus: string) => {
-    setSelectedCampuses((prev) =>
-      prev.includes(campus)
-        ? prev.filter((c) => c !== campus)
-        : [...prev, campus]
-    )
+    const newCampuses = selectedCampuses.includes(campus)
+      ? selectedCampuses.filter((c) => c !== campus)
+      : [...selectedCampuses, campus]
+
+    updateSearchParams({
+      campuses: newCampuses.length > 0 ? newCampuses.join(",") : null
+    })
   }
 
   const loadMoreTitles = async (page: number) => {
@@ -110,8 +153,8 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
             type="text"
             placeholder="Search titles..."
             className="w-full rounded-xl border border-gray-200 bg-white p-5 pl-12 shadow-lg transition-all focus:border-primary focus:ring-2 focus:ring-primary dark:border-gray-800 dark:bg-gray-950"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={localSearch}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
 
@@ -121,7 +164,7 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
               type="checkbox"
               id="hasDescription"
               checked={hasDescription}
-              onChange={(e) => setHasDescription(e.target.checked)}
+              onChange={(e) => updateSearchParams({ description: e.target.checked ? "true" : null })}
               className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <label
@@ -136,7 +179,7 @@ export default function TitlesList({ initialTitles }: TitlesListProps) {
               type="checkbox"
               id="hasLogin"
               checked={hasLogin}
-              onChange={(e) => setHasLogin(e.target.checked)}
+              onChange={(e) => updateSearchParams({ login: e.target.checked ? "true" : null })}
               className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
             />
             <label
