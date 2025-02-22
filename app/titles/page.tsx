@@ -1,22 +1,16 @@
 import TitlesList from "@/components/TitlesList"
 import { prisma } from "@/lib/prisma"
+import { Suspense } from "react"
 
-interface SearchParams {
-  search?: string
-  description?: string
-  login?: string
-  campuses?: string
-}
-
-export default async function TitlesPage({
-  searchParams,
-}: {
-  searchParams: SearchParams
-}) {
+export default async function TitlesPage() {
   const initialTitles = await prisma.title.findMany({
     take: 20,
     orderBy: { id: "asc" },
   })
 
-  return <TitlesList initialTitles={initialTitles} searchParams={searchParams} />
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TitlesList initialTitles={initialTitles} />
+    </Suspense>
+  )
 }

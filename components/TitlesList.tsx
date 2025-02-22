@@ -16,15 +16,9 @@ import { Input } from "./ui/input"
 
 interface TitlesListProps {
   initialTitles: Title[]
-  searchParams: {
-    search?: string
-    description?: string
-    login?: string
-    campuses?: string
-  }
 }
 
-export default function TitlesList({ initialTitles, searchParams }: TitlesListProps) {
+export default function TitlesList({ initialTitles }: TitlesListProps) {
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
